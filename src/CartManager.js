@@ -76,7 +76,7 @@ class CartManager {
                 const contenido = contenidoGot.payload
                 const cartById = contenido.find((cart) => (cart.id === id))
                 if (cartById)
-                    return ({ status: 200, payload: cartById })
+                    return ({ status: 200, payload: cartById.products })
                 else
                     return ({ status: 404, payload: "Carrito no encontrado" })
             }
@@ -98,23 +98,23 @@ class CartManager {
             else {
                 const contenidoGot = await this.getCarts()
                 const contenido = contenidoGot.payload
-                const cartIndex = contenido.findIndex((cart) => (cart.id === cartId))
+                const cartIndex = contenido.findIndex(c => c.id === cartId);
                 if (cartIndex != -1) {
                     const cart = contenido.find((thisCart) => thisCart.id == cartId)
-                    if (cart.products.find((product) => product.id === productId)) {
-                        cart.quantity += quantity
+                    const productIndex = cart.products.findIndex((p) => p.productId == productId)
+                    if (productIndex != -1) {
+                        contenido[cartIndex].products[productIndex].quantity+=1
                         await fs.promises.writeFile(this.path, JSON.stringify(contenido, null, '\t'))
-                        console.log(cart)
-                        return ({ status: 200, payload: `Se ha actualizado el campo ${updateField} con valor ${updateValue} del producto con el id: ${id} \n` })
+                        return ({ status: 200, payload: `Se ha agregado una unidad a el producto con id: ${productId} - total de unidades: ${contenido[cartIndex].products[productIndex].quantity} \n` })
                     }
-                    else
-                        cart.push(product)
-                    console.log(cart)
-                    return ({ status: 404, payload: `El campo "${updateField}" no existe\n` })
+                    else{
+                        contenido[cartIndex].products.push(product)
+                        await fs.promises.writeFile(this.path, JSON.stringify(contenido, null, '\t'))
+                        return ({ status: 201, payload: `Se ha agregado el producto con id: ${productId} - total de unidades: 1 \n` })
+                    }
                 }
                 else
-                    console.log("no se encontro el carrito")
-                /* return({status:404,payload:`No se encontró el carrito con el id:${id}\n`}) */
+                    return({status:404,payload:`No se encontró el carrito con el id:${id}\n`})
             }
         }
         catch (error) {

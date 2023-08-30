@@ -11,8 +11,8 @@ cartRouter.post('/',async (req,res) => {
 })
 
 cartRouter.get('/:cid', async (req, res) => {
-    const product = parseInt(req.params.pid,10)
-    const cartById = await cartManager.getCartById()
+    const cid = parseInt(req.params.cid,10)
+    const cartById = await cartManager.getCartById(cid)
     res.status(cartById.status).send(cartById.payload)
 })
 
@@ -20,8 +20,7 @@ cartRouter.post('/:cid/product/:pid',async (req,res) => {
     const cart = parseInt(req.params.cid,10)
     const product = parseInt(req.params.pid,10)
     const result = await cartManager.addProducts(cart,product,1)
-    res.status(200).send()
-    /* res.status(result.status).send(result.payload) */
+    res.status(result.status).send(result.payload)
 })
 
 export default cartRouter
